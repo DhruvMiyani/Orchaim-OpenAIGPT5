@@ -61,8 +61,7 @@ class GPT5Client:
                     }
                 ],
                 # GPT-5 specific parameters
-                max_tokens=2000,
-                temperature=0.3,
+                max_completion_tokens=2000,
                 # Add GPT-5 specific params if available
                 extra_body={
                     "reasoning_effort": reasoning_effort,
@@ -125,8 +124,7 @@ class GPT5Client:
                         "content": prompt
                     }
                 ],
-                max_tokens=4000,
-                temperature=0.4,
+                max_completion_tokens=4000,
                 extra_body={
                     "reasoning_effort": reasoning_effort,
                     "verbosity": verbosity
@@ -180,8 +178,7 @@ class GPT5Client:
                         "content": prompt
                     }
                 ],
-                max_tokens=3000,
-                temperature=0.2,  # Conservative for risk assessment
+                max_completion_tokens=3000,
                 extra_body={
                     "reasoning_effort": reasoning_effort,
                     "verbosity": verbosity
@@ -215,13 +212,13 @@ class GPT5Client:
         - Risk Level: {context.get('business_context', {}).get('urgency', 'normal')}
 
         Available Processors:
-        {json.dumps(context['processors'], indent=2)}
+        {self._serialize_context(context['processors'])}
 
         Recent Failures:
-        {json.dumps(context.get('failures', []), indent=2)}
+        {self._serialize_context(context.get('failures', []))}
 
         Processor Health Status:
-        {json.dumps(context.get('processor_health', {}), indent=2)}
+        {self._serialize_context(context.get('processor_health', {}))}
 
         REQUIREMENTS:
         1. If primary processor is frozen, MUST use alternative
@@ -277,7 +274,7 @@ class GPT5Client:
 
         Transaction Dataset:
         - Total transactions: {len(transactions)}
-        - Sample data: {json.dumps(transactions[:5], indent=2)}
+        - Sample data: {self._serialize_context(transactions[:5])}
 
         Analysis Context:
         - Business type: {context.get('business_type', 'B2B')}
@@ -373,6 +370,15 @@ class GPT5Client:
                 return text  # Return full text if reasoning detected
         
         return text[:500] + "..." if len(text) > 500 else text
+    
+    def _serialize_context(self, obj: Any) -> str:
+        """Serialize context objects with datetime handling."""
+        def datetime_converter(o):
+            if isinstance(o, datetime):
+                return o.isoformat()
+            return str(o)
+        
+        return json.dumps(obj, indent=2, default=datetime_converter)
     
     def _fallback_routing_decision(self, context: Dict[str, Any], error: str) -> Dict[str, Any]:
         """Fallback decision if GPT-5 API fails."""

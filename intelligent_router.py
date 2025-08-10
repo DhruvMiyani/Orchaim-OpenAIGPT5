@@ -113,11 +113,24 @@ class GPT5Router:
         
         processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
         
+        # Default to first available processor if GPT-5 doesn't specify one
+        default_processor = available_processors[0]["id"] if available_processors else "stripe"
+        
+        # Get the processor selected by GPT-5, but validate it's available
+        gpt5_selected = decision.get("selected_processor", default_processor)
+        available_processor_ids = [p["id"] for p in available_processors]
+        
+        # If GPT-5 selected an unavailable processor, use the default
+        if gpt5_selected not in available_processor_ids and available_processor_ids:
+            selected_processor = default_processor
+        else:
+            selected_processor = gpt5_selected
+            
         routing = RoutingDecision(
-            selected_processor=decision.get("selected_processor", "stripe"),
+            selected_processor=selected_processor,
             reasoning=decision.get("reasoning", "GPT-5 routing decision"),
             confidence=decision.get("confidence", 0.8),
-            fallback_chain=decision.get("fallback_chain", ["paypal", "visa"]),
+            fallback_chain=decision.get("fallback_chain", [p["id"] for p in available_processors[1:]]),
             gpt5_params={
                 "reasoning_effort": reasoning_effort,
                 "verbosity": decision.get("verbosity", "medium"),

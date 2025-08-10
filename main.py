@@ -114,7 +114,7 @@ async def process_payment(payment: PaymentRequestModel):
         "customer_type": "premium" if payment.amount > 500 else "standard"
     }
     
-    # Get available processors
+    # Get available processors (exclude failed/frozen processors)
     available_processors = [
         {
             "id": pid,
@@ -127,7 +127,7 @@ async def process_payment(payment: PaymentRequestModel):
             "capabilities": proc.get_capabilities()
         }
         for pid, proc in processors.items()
-        if proc.status != ProcessorStatus.INACTIVE
+        if proc.status == ProcessorStatus.ACTIVE  # Only include active processors
     ]
     
     # Use GPT-5 to make routing decision
@@ -145,6 +145,7 @@ async def process_payment(payment: PaymentRequestModel):
     # Try primary processor
     selected_processor = processors.get(routing_decision.selected_processor)
     if not selected_processor:
+        print("DEBUG: Selected processor not found, falling back to stripe")
         selected_processor = processors["stripe"]  # Default fallback
     
     response = await selected_processor.process_payment(request)
