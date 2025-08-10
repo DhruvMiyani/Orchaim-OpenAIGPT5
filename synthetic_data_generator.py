@@ -44,8 +44,10 @@ class GPT5SyntheticDataGenerator:
     Stripe transaction patterns that demonstrate common freeze triggers.
     """
     
-    def __init__(self, openai_api_key: str = "mock_gpt5_key"):
-        self.api_key = openai_api_key
+    def __init__(self, openai_api_key: str = None):
+        from gpt5_client import GPT5Client
+        
+        self.gpt5_client = GPT5Client()
         self.transaction_history = []
         
         # Common patterns that trigger Stripe freezes
@@ -102,8 +104,9 @@ class GPT5SyntheticDataGenerator:
             }
         }
         
-        # Simulate GPT-5 API call with verbosity=low for structured data
-        transactions = await self._simulate_gpt5_generation(
+        # Real GPT-5 API call for data generation
+        generation_plan = await self.gpt5_client.generate_synthetic_data(
+            pattern_type="normal",
             context=gpt5_context,
             reasoning_effort="minimal",  # Fast generation for baseline data
             verbosity="low"  # Concise structured output

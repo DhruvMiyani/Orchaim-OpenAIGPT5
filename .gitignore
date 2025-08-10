@@ -43,10 +43,13 @@ Thumbs.db
 
 # Environment variables
 .env
+.env.local
+.env.production
 
 # API Keys (security)
 *api_key*
 *secret*
+*OPENAI_API_KEY*
 
 # Temporary files
 *.tmp

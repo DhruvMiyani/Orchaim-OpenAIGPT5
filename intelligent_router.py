@@ -61,7 +61,9 @@ class GPT5Router:
     """
     
     def __init__(self, openai_api_key: str = None):
-        self.api_key = openai_api_key or "mock_key_for_demo"
+        from gpt5_client import GPT5Client
+        
+        self.gpt5_client = GPT5Client()
         self.failure_history: List[ProcessorFailure] = []
         self.routing_decisions: List[RoutingDecision] = []
         
@@ -102,9 +104,9 @@ class GPT5Router:
             context
         )
         
-        # Simulate GPT-5 API call (replace with actual OpenAI call)
-        decision = await self._call_gpt5_reasoning(
-            gpt5_context,
+        # Real GPT-5 API call
+        decision = await self.gpt5_client.make_routing_decision(
+            context=gpt5_context,
             reasoning_effort=reasoning_effort,
             verbosity="low" if request.amount < 100 else "medium"
         )
@@ -112,14 +114,15 @@ class GPT5Router:
         processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
         
         routing = RoutingDecision(
-            selected_processor=decision["processor"],
-            reasoning=decision["reasoning"],
-            confidence=decision["confidence"],
-            fallback_chain=decision["fallback_chain"],
+            selected_processor=decision.get("selected_processor", "stripe"),
+            reasoning=decision.get("reasoning", "GPT-5 routing decision"),
+            confidence=decision.get("confidence", 0.8),
+            fallback_chain=decision.get("fallback_chain", ["paypal", "visa"]),
             gpt5_params={
                 "reasoning_effort": reasoning_effort,
                 "verbosity": decision.get("verbosity", "medium"),
-                "reasoning_tokens": decision.get("reasoning_tokens", 0)
+                "reasoning_tokens": decision.get("reasoning_tokens", 0),
+                "gpt5_metadata": decision.get("gpt5_metadata", {})
             },
             decision_time_ms=processing_time
         )
