@@ -1,0 +1,72 @@
+{
+  "demo_timestamp": "20250810_141820",
+  "scenarios_processed": 4,
+  "summary": {
+    "total_decisions": 4,
+    "avg_confidence": 0.8,
+    "avg_processing_time_ms": 22336.25,
+    "total_tokens_used": 7946,
+    "reasoning_effort_distribution": {
+      "minimal": 1,
+      "medium": 1,
+      "high": 2
+    },
+    "verbosity_distribution": {
+      "low": 1,
+      "medium": 1,
+      "high": 2
+    },
+    "processors_selected": {
+      "stripe": 3,
+      "paypal": 0,
+      "visa": 1,
+      "square": 0
+    }
+  },
+  "decisions": [
+    {
+      "decision_id": "gpt5_258c0052cf1e",
+      "timestamp": "2025-08-10T14:16:53.605886",
+      "selected_processor": "visa",
+      "confidence": 0.8,
+      "reasoning_effort": "minimal",
+      "verbosity": "low",
+      "tokens_used": 1149,
+      "processing_time_ms": 6619,
+      "reasoning_steps": 1
+    },
+    {
+      "decision_id": "gpt5_dfd1c4497e01",
+      "timestamp": "2025-08-10T14:17:27.162154",
+      "selected_processor": "stripe",
+      "confidence": 0.8,
+      "reasoning_effort": "medium",
+      "verbosity": "medium",
+      "tokens_used": 1551,
+      "processing_time_ms": 32554,
+      "reasoning_steps": 0
+    },
+    {
+      "decision_id": "gpt5_d8c3e95eaa9f",
+      "timestamp": "2025-08-10T14:17:54.966794",
+      "selected_processor": "stripe",
+      "confidence": 0.8,
+      "reasoning_effort": "high",
+      "verbosity": "high",
+      "tokens_used": 2623,
+      "processing_time_ms": 26803,
+      "reasoning_steps": 0
+    },
+    {
+      "decision_id": "gpt5_07ba2534adbd",
+      "timestamp": "2025-08-10T14:18:19.337833",
+      "selected_processor": "stripe",
+      "confidence": 0.8,
+      "reasoning_effort": "high",
+      "verbosity": "high",
+      "tokens_used": 2623,
+      "processing_time_ms": 23369,
+      "reasoning_steps": 0
+    }
+  ]
+}

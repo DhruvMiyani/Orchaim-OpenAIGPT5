@@ -7,7 +7,7 @@ import asyncio
 import json
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, AsyncGenerator
 from dataclasses import dataclass, field
 import uuid
 
@@ -45,9 +45,13 @@ class GPT5SyntheticDataGenerator:
     """
     
     def __init__(self, openai_api_key: str = None):
-        from gpt5_client import GPT5Client
+        try:
+            from gpt5_client import GPT5Client
+            self.gpt5_client = GPT5Client()
+        except Exception as e:
+            print(f"⚠️  GPT-5 client not available: {e}")
+            self.gpt5_client = None
         
-        self.gpt5_client = GPT5Client()
         self.transaction_history = []
         
         # Common patterns that trigger Stripe freezes
@@ -105,12 +109,15 @@ class GPT5SyntheticDataGenerator:
         }
         
         # Real GPT-5 API call for data generation
-        generation_plan = await self.gpt5_client.generate_synthetic_data(
-            pattern_type="normal",
-            context=gpt5_context,
-            reasoning_effort="minimal",  # Fast generation for baseline data
-            verbosity="low"  # Concise structured output
-        )
+        if self.gpt5_client:
+            generation_plan = await self.gpt5_client.generate_synthetic_data(
+                pattern_type="normal",
+                context=gpt5_context,
+                reasoning_effort="minimal",  # Fast generation for baseline data
+                verbosity="low"  # Concise structured output
+            )
+        else:
+            generation_plan = {"pattern_type": "normal", "generation_plan": "Mock data generation"}
         
         # Generate actual transaction objects
         baseline_transactions = []
@@ -457,6 +464,179 @@ class GPT5SyntheticDataGenerator:
         
         return stripe_format
     
+    async def generate_real_time_stripe_feed(
+        self, 
+        duration_minutes: int = 60,
+        events_per_minute: int = 5
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Generate real-time Stripe transaction stream for GPT-5 to analyze.
+        Simulates live balance_transactions feed with varied risk patterns.
+        """
+        print(f"🔴 LIVE: GPT-5 real-time Stripe feed starting ({duration_minutes}m)")
+        
+        start_time = datetime.utcnow()
+        event_count = 0
+        
+        while (datetime.utcnow() - start_time).total_seconds() < duration_minutes * 60:
+            # Generate batch of events
+            batch = []
+            for _ in range(events_per_minute):
+                event = await self._generate_live_transaction_event()
+                batch.append(event)
+                event_count += 1
+            
+            # Occasionally inject risk scenarios
+            if event_count % 50 == 0:
+                risk_batch = await self._inject_risk_scenario()
+                batch.extend(risk_batch)
+                print(f"⚠️  RISK INJECTION: {len(risk_batch)} suspicious events")
+            
+            # Yield events with GPT-5 context
+            yield {
+                "timestamp": datetime.utcnow().isoformat(),
+                "events": batch,
+                "risk_indicators": self._calculate_risk_indicators(batch),
+                "gpt5_analysis_needed": self._should_trigger_gpt5_analysis(batch),
+                "cumulative_events": event_count
+            }
+            
+            # Wait for next batch (simulate real-time)
+            await asyncio.sleep(60 / events_per_minute)
+    
+    async def _generate_live_transaction_event(self) -> Dict[str, Any]:
+        """Generate single realistic Stripe balance_transaction."""
+        
+        amount = random.uniform(25, 400)
+        txn_id = f"txn_{uuid.uuid4().hex[:17]}"
+        
+        # Weighted transaction types
+        txn_type = random.choices(
+            ["charge", "refund", "payout", "adjustment"],
+            weights=[0.85, 0.10, 0.03, 0.02]
+        )[0]
+        
+        if txn_type == "refund":
+            amount = -amount
+        elif txn_type == "adjustment":
+            amount = random.choice([-15.00, -25.00])  # Chargeback fees
+        
+        return {
+            "id": txn_id,
+            "object": "balance_transaction", 
+            "amount": int(amount * 100),  # Stripe uses cents
+            "currency": "usd",
+            "created": int(datetime.utcnow().timestamp()),
+            "fee": int((abs(amount) * 0.029 + 0.30) * 100),
+            "net": int((amount - (abs(amount) * 0.029 + 0.30)) * 100),
+            "type": txn_type,
+            "status": "available",
+            "source": f"ch_{uuid.uuid4().hex[:24]}" if txn_type == "charge" else None,
+            "description": self._generate_realistic_description(txn_type)
+        }
+    
+    async def _inject_risk_scenario(self) -> List[Dict[str, Any]]:
+        """Inject risk pattern that should trigger GPT-5 analysis."""
+        
+        scenario_type = random.choice(["volume_spike", "refund_cluster", "large_amounts"])
+        risk_events = []
+        
+        if scenario_type == "volume_spike":
+            # Generate 20+ transactions in quick succession
+            for _ in range(random.randint(20, 35)):
+                event = await self._generate_live_transaction_event()
+                event["risk_flag"] = "volume_anomaly"
+                risk_events.append(event)
+                
+        elif scenario_type == "refund_cluster":
+            # Generate cluster of refunds
+            for _ in range(random.randint(8, 15)):
+                refund_event = {
+                    "id": f"txn_{uuid.uuid4().hex[:17]}",
+                    "type": "refund",
+                    "amount": -random.randint(5000, 25000),  # $50-250 refunds
+                    "created": int(datetime.utcnow().timestamp()),
+                    "risk_flag": "refund_cluster",
+                    "description": "Customer complaint refund"
+                }
+                risk_events.append(refund_event)
+                
+        elif scenario_type == "large_amounts":
+            # Unusually large transactions
+            for _ in range(random.randint(3, 8)):
+                large_event = await self._generate_live_transaction_event()
+                large_event["amount"] = random.randint(100000, 500000)  # $1000-5000
+                large_event["risk_flag"] = "amount_anomaly"
+                risk_events.append(large_event)
+        
+        return risk_events
+    
+    def _calculate_risk_indicators(self, batch: List[Dict[str, Any]]) -> Dict[str, float]:
+        """Calculate risk metrics for current batch."""
+        
+        charges = [e for e in batch if e.get("type") == "charge"]
+        refunds = [e for e in batch if e.get("type") == "refund"]
+        
+        total_volume = len(batch)
+        refund_rate = len(refunds) / max(len(charges), 1)
+        avg_amount = sum(abs(e.get("amount", 0)) for e in batch) / max(total_volume, 1) / 100
+        
+        # Risk flags
+        has_risk_flags = any(e.get("risk_flag") for e in batch)
+        
+        return {
+            "transaction_velocity": total_volume,
+            "refund_rate": refund_rate,
+            "average_amount": avg_amount,
+            "risk_flags_present": has_risk_flags,
+            "risk_score": min((total_volume * 0.1) + (refund_rate * 50) + (1 if has_risk_flags else 0), 10.0)
+        }
+    
+    def _should_trigger_gpt5_analysis(self, batch: List[Dict[str, Any]]) -> bool:
+        """Determine if batch needs GPT-5 intelligent analysis."""
+        
+        indicators = self._calculate_risk_indicators(batch)
+        
+        # Trigger GPT-5 analysis if:
+        return (
+            indicators["transaction_velocity"] > 15 or  # High volume
+            indicators["refund_rate"] > 0.08 or         # >8% refunds
+            indicators["risk_flags_present"] or         # Risk flags
+            indicators["average_amount"] > 800          # Large amounts
+        )
+    
+    def _generate_realistic_description(self, txn_type: str) -> str:
+        """Generate realistic transaction descriptions."""
+        
+        descriptions = {
+            "charge": [
+                "Monthly subscription billing",
+                "One-time service payment", 
+                "Product purchase - digital",
+                "Consulting services",
+                "License fee - annual"
+            ],
+            "refund": [
+                "Customer service refund",
+                "Billing dispute resolution",
+                "Product return processing",
+                "Service cancellation",
+                "Duplicate charge reversal"
+            ],
+            "payout": [
+                "Automatic payout to bank",
+                "Manual payout request", 
+                "Daily settlement"
+            ],
+            "adjustment": [
+                "Chargeback fee",
+                "Processing adjustment",
+                "Account correction"
+            ]
+        }
+        
+        return random.choice(descriptions.get(txn_type, ["Transaction"]))
+
     async def generate_demo_dataset(self) -> Dict[str, Any]:
         """Generate complete demo dataset showing normal vs freeze-trigger patterns."""
         

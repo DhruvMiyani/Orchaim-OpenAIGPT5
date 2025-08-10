@@ -1,14 +1,29 @@
-# Component 1: DATA ANALYSIS
-## GPT-5 Synthetic Transaction Data Generator
+# Orchaim: Intelligent Payment Orchestration System
 
-### Overview
+## Components Overview
+
+### Component 1: DATA ANALYSIS
+**GPT-5 Synthetic Transaction Data Generator**
+
 This component uses GPT-5 to generate realistic Stripe transaction patterns that can trigger account freezes. It demonstrates GPT-5's structured data generation capabilities for B2B payment risk analysis.
 
-### Key Features
+**Key Features:**
 - **Pattern Generation**: Normal baseline, volume spikes, refund surges, chargeback patterns
 - **Stripe Format Compliance**: All transactions generated in correct Stripe API format  
 - **GPT-5 Integration**: Uses reasoning_effort and verbosity parameters
 - **Risk Analysis**: Accurate freeze trigger detection and probability assessment
+
+### Component 2: GPT-5 ENGINE
+**Real-time Decision Making with Chain-of-Thought**
+
+This component implements the core GPT-5 decision engine that powers intelligent payment routing. It uses GPT-5's new reasoning_effort and verbosity parameters to make context-aware routing decisions with full audit trails.
+
+**Key Features:**
+- **Real OpenAI GPT-5 API Integration**: Direct connection to GPT-5 model
+- **Reasoning Effort Control**: minimal/low/medium/high parameter tuning
+- **Verbosity Control**: Adjustable output detail for different scenarios
+- **Chain-of-thought Reasoning**: Complete decision audit trails
+- **Context-Aware Decisions**: Adapts reasoning based on transaction complexity
 
 ## 🚀 Key Features
 
