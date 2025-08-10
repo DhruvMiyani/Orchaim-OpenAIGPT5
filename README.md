@@ -1,22 +1,15 @@
-# Orchaim: Intelligent Payment Router
+# Component 2: GPT-5 ENGINE
+## Real-time Decision Making with Chain-of-Thought
 
+### Overview
+This component implements the core GPT-5 decision engine that powers intelligent payment routing. It uses GPT-5's new reasoning_effort and verbosity parameters to make context-aware routing decisions with full audit trails.
 
-# Front End with  GPT 5 :
-
-https://www.loom.com/share/fc710355b9aa4a27a9992928d88440f1?sid=89eb5505-42b5-4c03-be17-59debf2a0522
-
-## 🎯 Problems We're Solving
-
-### Problem 1: Payment Processor Failures
-**When Stripe freezes your account or fails, your business stops receiving payments.**
-
-### Problem 2: Understanding Freeze Triggers  
-**Businesses don't know what transaction patterns cause Stripe to freeze accounts.**
-
-This system uses GPT-5's new reasoning and synthetic data capabilities to:
-1. **Intelligently route payments** when processors fail
-2. **Generate realistic transaction data** to understand freeze triggers
-3. **Analyze risk patterns** before they cause problems
+### Key Features
+- **Real OpenAI GPT-5 API Integration**: Direct connection to GPT-5 model
+- **Reasoning Effort Control**: minimal/low/medium/high parameter tuning
+- **Verbosity Control**: Adjustable output detail for different scenarios
+- **Chain-of-thought Reasoning**: Complete decision audit trails
+- **Context-Aware Decisions**: Adapts reasoning based on transaction complexity
 
 ## 🚀 Key Features
 
