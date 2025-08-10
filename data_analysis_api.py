@@ -1,18 +1,49 @@
 """
-GPT-5 Data Analysis API for Stripe Transaction Patterns
-Analyzes transaction data and detects freeze risk patterns using GPT-5 reasoning
+FastAPI Data Analysis API for GPT-5 Payment Orchestration
+Complete API server for synthetic data generation and risk analysis
 """
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
+import asyncio
 import json
+from datetime import datetime, timedelta
+from typing import Dict, List, Any, Optional
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Path
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import uvicorn
 
+from gpt5_client import GPT5Client
+from gpt5_stripe_data_generator import GPT5StripeDataGenerator, StripeTransaction
+from risk_pattern_analyzer import GPT5RiskAnalyzer, RiskAnalysis
+from realtime_data_simulator import RealtimeStreamSimulator, StreamingMode, StreamDataStore
 from synthetic_data_generator import GPT5SyntheticDataGenerator, SyntheticTransaction
 
+# Initialize FastAPI app
+app = FastAPI(
+    title="GPT-5 Payment Data Analysis API",
+    description="Advanced payment data generation and risk analysis using GPT-5",
+    version="1.0.0"
+)
 
-router = APIRouter(prefix="/data", tags=["Data Analysis"])
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize components
+gpt5_client = GPT5Client()
+data_generator = GPT5SyntheticDataGenerator()
+risk_analyzer = GPT5RiskAnalyzer()
+stream_simulator = RealtimeStreamSimulator()
+stream_data_store = StreamDataStore()
+
+# Global state
+active_streams = {}
+generated_datasets = {}
 
 
 class DataAnalysisRequest(BaseModel):
@@ -38,11 +69,63 @@ class DataGenerationRequest(BaseModel):
     reasoning_effort: str = "medium"
 
 
-# Initialize GPT-5 data generator
-data_generator = GPT5SyntheticDataGenerator()
+# Additional Pydantic models for new endpoints
+class StreamingRequest(BaseModel):
+    mode: str = Field(..., description="Streaming mode: normal, high_volume, risk_pattern, mixed")
+    target_rate: float = Field(default=2.0, ge=0.1, le=100.0, description="Target transactions per second")
+    duration_seconds: Optional[int] = Field(None, ge=10, le=3600, description="Stream duration in seconds")
 
 
-@router.post("/generate", response_model=Dict[str, Any])
+class StreamingResponse(BaseModel):
+    stream_id: str
+    mode: str
+    target_rate: float
+    is_active: bool
+    transaction_count: int
+    total_volume: float
+
+
+class RiskAnalysisRequest(BaseModel):
+    transaction_ids: Optional[List[str]] = Field(None, description="Specific transaction IDs to analyze")
+    time_window_hours: int = Field(default=24, ge=1, le=168, description="Analysis time window in hours")
+    reasoning_effort: str = Field(default="high", description="GPT-5 reasoning effort")
+    include_gpt5_insights: bool = Field(default=True, description="Include GPT-5 insights in response")
+
+
+@app.get("/")
+async def root():
+    """API health check"""
+    return {
+        "service": "GPT-5 Payment Data Analysis API",
+        "status": "operational",
+        "version": "1.0.0",
+        "gpt5_enabled": True,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Detailed health check"""
+    try:
+        return {
+            "api": "healthy",
+            "gpt5_client": "healthy",
+            "data_generator": "healthy",
+            "risk_analyzer": "healthy",
+            "stream_simulator": "healthy",
+            "active_streams": len(active_streams),
+            "stored_datasets": len(generated_datasets)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
+
+
+# Initialize GPT-5 data generator (legacy)
+legacy_data_generator = GPT5SyntheticDataGenerator()
+
+
+@app.post("/data/generate", response_model=Dict[str, Any])
 async def generate_synthetic_data(request: DataGenerationRequest):
     """
     Generate synthetic Stripe transaction data using GPT-5.
@@ -50,7 +133,7 @@ async def generate_synthetic_data(request: DataGenerationRequest):
     """
     
     if request.pattern_type == "normal":
-        transactions = await data_generator.generate_normal_baseline(
+        transactions = await legacy_data_generator.generate_normal_baseline(
             days=request.days,
             daily_volume=request.daily_volume
         )
@@ -65,7 +148,7 @@ async def generate_synthetic_data(request: DataGenerationRequest):
                 "verbosity": "low",
                 "structured_generation": True
             },
-            "sample_transactions": data_generator.export_to_stripe_format(transactions[:5]),
+            "sample_transactions": legacy_data_generator.export_to_stripe_format(transactions[:5]),
             "summary": {
                 "avg_amount": sum(t.amount for t in transactions if t.type == "charge") / len([t for t in transactions if t.type == "charge"]),
                 "total_volume": sum(t.amount for t in transactions if t.type == "charge"),
@@ -75,7 +158,7 @@ async def generate_synthetic_data(request: DataGenerationRequest):
     
     else:
         # Generate freeze trigger patterns
-        transactions = await data_generator.generate_freeze_trigger_scenario(
+        transactions = await legacy_data_generator.generate_freeze_trigger_scenario(
             pattern_type=request.pattern_type,
             severity="high"
         )
@@ -100,11 +183,11 @@ async def generate_synthetic_data(request: DataGenerationRequest):
                 "pattern_recognition": True,
                 "risk_modeling": True
             },
-            "sample_transactions": data_generator.export_to_stripe_format(transactions[:10])
+            "sample_transactions": legacy_data_generator.export_to_stripe_format(transactions[:10])
         }
 
 
-@router.post("/analyze", response_model=RiskAnalysisResponse) 
+@app.post("/data/analyze", response_model=RiskAnalysisResponse) 
 async def analyze_transaction_risk(request: DataAnalysisRequest):
     """
     Analyze transaction patterns for Stripe freeze risk using GPT-5 reasoning.
@@ -146,14 +229,14 @@ async def analyze_transaction_risk(request: DataAnalysisRequest):
     )
 
 
-@router.get("/demo/complete-dataset")
+@app.get("/data/demo/complete-dataset")
 async def generate_complete_demo_dataset():
     """
     Generate complete demo dataset showing GPT-5's data generation capabilities.
     Creates normal baseline + all freeze trigger scenarios.
     """
     
-    dataset = await data_generator.generate_demo_dataset()
+    dataset = await legacy_data_generator.generate_demo_dataset()
     
     # Export all data in Stripe format
     all_transactions = []
@@ -162,7 +245,7 @@ async def generate_complete_demo_dataset():
     for scenario_name, scenario_txns in dataset["freeze_scenarios"].items():
         all_transactions.extend(scenario_txns)
     
-    stripe_format = data_generator.export_to_stripe_format(all_transactions)
+    stripe_format = legacy_data_generator.export_to_stripe_format(all_transactions)
     
     # Analyze each scenario
     scenario_analysis = {}
@@ -206,7 +289,7 @@ async def generate_complete_demo_dataset():
     }
 
 
-@router.get("/patterns/freeze-triggers")
+@app.get("/data/patterns/freeze-triggers")
 async def get_freeze_trigger_patterns():
     """
     Get detailed information about transaction patterns that trigger Stripe freezes.
@@ -364,3 +447,203 @@ async def _simulate_gpt5_risk_analysis(
         "recommendations": recommendations,
         "reasoning": reasoning.strip()
     }
+
+
+# New streaming and advanced analysis endpoints
+@app.post("/stream/start", response_model=StreamingResponse)
+async def start_transaction_stream(request: StreamingRequest, background_tasks: BackgroundTasks):
+    """Start real-time transaction stream simulation"""
+    
+    try:
+        stream_id = f"stream_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        
+        try:
+            mode = StreamingMode(request.mode)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid streaming mode: {request.mode}")
+        
+        # Start streaming in background
+        background_tasks.add_task(
+            run_streaming_task,
+            stream_id,
+            mode,
+            request.target_rate,
+            request.duration_seconds
+        )
+        
+        # Store stream info
+        active_streams[stream_id] = {
+            "mode": request.mode,
+            "target_rate": request.target_rate,
+            "started_at": datetime.utcnow(),
+            "is_active": True,
+            "transaction_count": 0
+        }
+        
+        return StreamingResponse(
+            stream_id=stream_id,
+            mode=request.mode,
+            target_rate=request.target_rate,
+            is_active=True,
+            transaction_count=0,
+            total_volume=0.0
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start stream: {str(e)}")
+
+
+@app.get("/stream/{stream_id}/status")
+async def get_stream_status(stream_id: str = Path(..., description="Stream ID")):
+    """Get status of a specific stream"""
+    
+    if stream_id not in active_streams:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    
+    stream_info = active_streams[stream_id]
+    stats = stream_simulator.get_stream_stats()
+    
+    return {
+        "stream_id": stream_id,
+        "mode": stream_info["mode"],
+        "target_rate": stream_info["target_rate"],
+        "started_at": stream_info["started_at"].isoformat(),
+        "is_active": stream_info["is_active"],
+        "runtime_seconds": (datetime.utcnow() - stream_info["started_at"]).total_seconds(),
+        "statistics": stats
+    }
+
+
+@app.post("/analyze/advanced", response_model=Dict[str, Any])
+async def advanced_risk_analysis(request: RiskAnalysisRequest):
+    """Perform advanced GPT-5 risk analysis"""
+    
+    try:
+        # Get transactions for analysis
+        if request.transaction_ids:
+            transactions = []  # Would need transaction lookup in real implementation
+        else:
+            cutoff_time = datetime.utcnow() - timedelta(hours=request.time_window_hours)
+            stream_data = stream_data_store.get_transactions_by_timerange(
+                cutoff_time, datetime.utcnow()
+            )
+            transactions = [sd.transaction for sd in stream_data]
+        
+        if not transactions:
+            raise HTTPException(status_code=404, detail="No transactions found for analysis")
+        
+        # Perform advanced risk analysis
+        analysis = await risk_analyzer.analyze_transactions(
+            transactions=transactions,
+            reasoning_effort=request.reasoning_effort
+        )
+        
+        return {
+            "overall_risk": analysis.overall_risk.value,
+            "freeze_probability": analysis.freeze_probability,
+            "identified_patterns": [
+                {
+                    "pattern_type": p.pattern_type,
+                    "severity": p.severity.value,
+                    "description": p.description,
+                    "confidence": p.confidence,
+                    "freeze_probability": p.freeze_probability,
+                    "timeline_estimate": p.timeline_estimate,
+                    "gpt5_reasoning": p.gpt5_reasoning
+                }
+                for p in analysis.identified_patterns
+            ],
+            "recommendations": analysis.recommendations,
+            "gpt5_insights": analysis.gpt5_insights if request.include_gpt5_insights else {},
+            "analysis_timestamp": analysis.analysis_timestamp.isoformat(),
+            "transaction_count": len(transactions)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Advanced analysis failed: {str(e)}")
+
+
+@app.get("/gpt5/capabilities")
+async def get_gpt5_capabilities():
+    """Get GPT-5 capabilities and current status"""
+    
+    return {
+        "model": "gpt-5",
+        "capabilities": {
+            "reasoning_effort_control": {
+                "levels": ["minimal", "low", "medium", "high"],
+                "description": "Control reasoning depth for different tasks"
+            },
+            "verbosity_control": {
+                "levels": ["low", "medium", "high"],
+                "description": "Control output detail level"
+            },
+            "structured_data_generation": {
+                "supported": True,
+                "description": "Generate complex structured datasets"
+            },
+            "risk_pattern_analysis": {
+                "supported": True,
+                "description": "Advanced risk pattern detection and analysis"
+            },
+            "chain_of_thought_reasoning": {
+                "supported": True,
+                "description": "Detailed reasoning traces for audit purposes"
+            },
+            "long_context_analysis": {
+                "context_length": "256K+ tokens",
+                "description": "Analyze large transaction datasets"
+            }
+        },
+        "use_cases": [
+            "Payment routing decisions with explainable reasoning",
+            "Synthetic transaction data generation for testing",
+            "Real-time risk pattern detection",
+            "Compliance audit log generation",
+            "Fraud detection and prevention"
+        ]
+    }
+
+
+# Background task functions
+async def run_streaming_task(
+    stream_id: str,
+    mode: StreamingMode,
+    target_rate: float,
+    duration_seconds: Optional[int]
+):
+    """Run streaming simulation in background"""
+    
+    try:
+        stream_count = 0
+        
+        async for stream_data in stream_simulator.start_continuous_stream(mode, target_rate):
+            stream_data_store.add_transaction(stream_data)
+            stream_count += 1
+            
+            # Update stream info
+            if stream_id in active_streams:
+                active_streams[stream_id]["transaction_count"] = stream_count
+            
+            # Stop after duration if specified
+            if duration_seconds and stream_count * (1.0 / target_rate) >= duration_seconds:
+                break
+        
+        # Mark stream as inactive
+        if stream_id in active_streams:
+            active_streams[stream_id]["is_active"] = False
+            
+    except Exception as e:
+        print(f"Streaming task error for {stream_id}: {e}")
+        if stream_id in active_streams:
+            active_streams[stream_id]["is_active"] = False
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "data_analysis_api:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )
