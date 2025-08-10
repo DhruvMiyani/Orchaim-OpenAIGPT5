@@ -1,24 +1,113 @@
-Welcome to the NextJS base template bootstrapped using the `create-next-app`. This template supports TypeScript, but you can use normal JavaScript as well.
+# GPT-5 Payment Orchestration Dashboard
 
-## Getting Started
+A Next.js frontend for the GPT-5 powered payment orchestration system inspired by the Orachaim design.
 
-Hit the run button to start the development server.
+## Features
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+### 🧠 GPT-5 Integration
+- **Real-time Decision Making**: Configurable reasoning effort (minimal/medium/high)
+- **Verbosity Control**: Adjustable output detail for different scenarios
+- **Chain-of-Thought Visualization**: See GPT-5's reasoning process in real-time
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on `/api/hello`. This endpoint can be edited in `pages/api/hello.ts`.
+### 💳 Payment Processing
+- **Intelligent Routing**: Automatic processor selection based on GPT-5 analysis
+- **Multi-Processor Support**: Stripe, PayPal, Visa Direct integration
+- **Fallback Logic**: Automatic rerouting when processors fail or freeze
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### 📊 Synthetic Data Generation
+- **Pattern Generation**: Normal baseline, volume spikes, refund surges, chargeback patterns
+- **Risk Analysis**: Real-time freeze risk assessment
+- **Stripe Format Compliance**: Perfect API format for testing
 
-## Learn More
+### 🎨 Modern UI
+- **Clean Dashboard**: Inspired by Orachaim design patterns
+- **Terminal-style Displays**: Real-time API response visualization
+- **Status Indicators**: Live processor health monitoring
+- **Responsive Design**: Mobile-friendly layout
 
-To learn more about Next.js, take a look at the following resources:
+## Quick Start
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-## Productionizing your Next App
+2. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
 
-To make your next App run smoothly in production make sure to deploy your project with [Repl Deployments](https://docs.replit.com/hosting/deployments/about-deployments)!
+3. **Open Dashboard**
+   Navigate to [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 
-You can also produce a production build by running `npm run build` and [changing the run command](https://docs.replit.com/programming-ide/configuring-repl#run) to `npm run start`.
+## API Endpoints
+
+### Payment Processing
+- `POST /api/payments/process` - Process payment with GPT-5 routing
+- Parameters: amount, currency, description, reasoning_effort, verbosity
+
+### Data Generation
+- `POST /api/data/generate` - Generate synthetic transaction data
+- Parameters: pattern_type, reasoning_effort, verbosity
+
+## GPT-5 Features Demonstrated
+
+### Reasoning Effort Control
+```javascript
+{
+  "reasoning_effort": "high",    // Deep analysis for complex scenarios
+  "verbosity": "high",          // Detailed audit trails
+  "context_aware": true         // Adapts to transaction complexity
+}
+```
+
+### Decision Visualization
+- Real-time GPT-5 reasoning display
+- Chain-of-thought process tracking
+- Performance metrics (decision time, confidence)
+- Audit log generation
+
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Next.js   │────▶│     API      │────▶│   GPT-5     │
+│  Frontend   │     │  Endpoints   │     │   Engine    │
+└─────────────┘     └──────────────┘     └─────────────┘
+                            │
+                ┌───────────┼───────────┐
+                ▼           ▼           ▼
+         ┌──────────┐ ┌──────────┐ ┌──────────┐
+         │  Stripe  │ │  PayPal  │ │   Visa   │
+         └──────────┘ └──────────┘ └──────────┘
+```
+
+## Tech Stack
+
+- **Framework**: Next.js 15
+- **Language**: TypeScript
+- **Styling**: CSS Modules
+- **API**: Next.js API Routes
+- **Backend**: FastAPI (payment_router_clean)
+
+## Demo Scenarios
+
+1. **Normal Payment** ($25,000) - Fast routing with minimal reasoning
+2. **High-Risk Transaction** - Deep analysis with high reasoning effort
+3. **Stripe Freeze Simulation** - Automatic PayPal fallback
+4. **Synthetic Data Generation** - Create realistic test patterns
+
+## Production Integration
+
+To connect with the FastAPI backend, update the API endpoints in:
+- `/pages/api/payments/process.ts`
+- `/pages/api/data/generate.ts`
+
+Replace demo logic with actual backend calls:
+```javascript
+const response = await fetch('http://localhost:8000/payments/process', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(requestData)
+});
+```

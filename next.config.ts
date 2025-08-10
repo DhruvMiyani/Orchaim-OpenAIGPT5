@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
-import { env } from "process";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: [env.REPLIT_DOMAINS.split(",")[0]],
+  // Remove Replit-specific configuration for local development
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig;
