@@ -8,19 +8,22 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>PayFlow - Payment Orchestration Platform</title>
-        <meta name="description" content="Intelligent payment routing with zero-downtime fallbacks. Built for B2B reliability." />
+        <title>Orchaim - MCP Server for Agentic Shopping</title>
+        <meta name="description" content="Model Context Protocol server enabling AI agents to safely manage shopping transactions with intelligent payment orchestration." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <nav className={styles.nav}>
-        <div className={styles.logo}>PayFlow</div>
+        <div className={styles.logo}>
+          <span className={styles.logoIcon}>⚡</span>
+          Orchaim
+        </div>
         <div className={styles.navLinks}>
           <a href="#features">Features</a>
           <a href="#pricing">Pricing</a>
-          <a href="#docs">Docs</a>
+          <a href="#docs">Documentation</a>
           <Link href="/dashboard">
-            <button className={styles.ctaButton}>Get Started</button>
+            <button className={styles.loginButton}>Dashboard</button>
           </Link>
         </div>
       </nav>
@@ -28,77 +31,105 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <section className={styles.hero}>
           <div className={styles.heroContent}>
-            <div className={styles.badge}>GPT-5 AGENT • ZERO-DOWNTIME FALLBACK</div>
+            <div className={styles.badge}>MCP SERVER • AI AGENT COMMERCE</div>
             <h1 className={styles.heroTitle}>
-              Payment Orchestration that protects{" "}
-              <span className={styles.highlight}>$ every second</span>
+              This is why AI agents shop smart
             </h1>
             <p className={styles.heroDescription}>
-              Intelligent routing, instant fallbacks, and transparent reasoning. Built for B2B reliability.
+              Model Context Protocol server enabling Future Shopping Agents from OpenAI, Visa, and Perplexity to safely initiate, reroute, and complete purchases with trusted payment orchestration.
             </p>
-            <div className={styles.heroButtons}>
-              <button className={styles.primaryButton}>Process Payment</button>
-              <button className={styles.secondaryButton}>View Docs</button>
-            </div>
-          </div>
 
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <div className={styles.statValue}>99.9%</div>
-              <div className={styles.statLabel}>Uptime</div>
+            <div className={styles.savingsSection}>
+              <div className={styles.savingsAmount}>$2.4M</div>
+              <div className={styles.savingsLabel}>Revenue Protected <span className={styles.tooltip}>?</span></div>
+              
+              <div className={styles.slider}>
+                <div className={styles.sliderTrack}>
+                  <div className={styles.sliderFill}></div>
+                  <div className={styles.sliderHandle}></div>
+                </div>
+                <div className={styles.sliderLabels}>
+                  <span>$500K</span>
+                  <span className={styles.sliderCenter}>$1.2M<br/>Transaction Volume</span>
+                  <span>$5M+</span>
+                </div>
+              </div>
             </div>
-            <div className={styles.statCard}>
-              <div className={styles.statValue}>$156k</div>
-              <div className={styles.statLabel}>Revenue Protected</div>
+
+            <div className={styles.demoCard}>
+              <div className={styles.demoHeader}>
+                <span className={styles.demoLabel}>AGENT FEATURE</span>
+                <div className={styles.approvedBadge}>
+                  <span className={styles.approvedNumber}>24</span>
+                  <span className={styles.approvedText}>AGENTS<br/>APPROVED</span>
+                </div>
+              </div>
+              <h2 className={styles.demoTitle}>Your AI Shopping Agent</h2>
+              <p className={styles.demoDescription}>
+                Use MCP to call, route, and orchestrate payments with intelligent processor selection and compliance boundaries for autonomous shopping experiences.
+              </p>
+              <div className={styles.demoFeatures}>
+                <div className={styles.demoFeature}>
+                  <span className={styles.featureIcon}>🛡️</span>
+                  Safe Transaction Boundaries
+                </div>
+                <div className={styles.demoFeature}>
+                  <span className={styles.featureIcon}>⚡</span>
+                  Intelligent Routing
+                </div>
+                <div className={styles.demoFeature}>
+                  <span className={styles.featureIcon}>📋</span>
+                  Full Audit Trail
+                </div>
+              </div>
             </div>
-            <div className={styles.statCard}>
-              <div className={styles.statValue}>1,247</div>
-              <div className={styles.statLabel}>GPT-5 Decisions</div>
-            </div>
-            <div className={styles.statCard}>
-              <div className={styles.statValue}>0s</div>
-              <div className={styles.statLabel}>Downtime</div>
+
+            <div className={styles.heroButtons}>
+              <Link href="/dashboard">
+                <button className={styles.primaryButton}>Start Integration</button>
+              </Link>
+              <button className={styles.secondaryButton}>View Documentation</button>
             </div>
           </div>
         </section>
 
         <section id="features" className={styles.features}>
-          <h2 className={styles.sectionTitle}>Intelligent Payment Infrastructure</h2>
+          <h2 className={styles.sectionTitle}>Trusted by AI Agents Worldwide</h2>
           <div className={styles.featureGrid}>
             <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>🚀</div>
-              <h3>Smart Routing</h3>
-              <p>AI-powered routing decisions that optimize for success rates and costs in real-time.</p>
+              <div className={styles.featureIcon}>🤖</div>
+              <h3>MCP Integration</h3>
+              <p>Native Model Context Protocol support for seamless agent communication and shopping context management.</p>
+            </div>
+            <div className={styles.featureCard}>
+              <div className={styles.featureIcon}>🔄</div>
+              <h3>Smart Rerouting</h3>
+              <p>Intelligent payment processor fallbacks when primary routes fail, maintaining transaction continuity.</p>
             </div>
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>🛡️</div>
-              <h3>Zero Downtime</h3>
-              <p>Instant fallbacks to backup processors when primary routes fail or detect issues.</p>
+              <h3>Compliance First</h3>
+              <p>Built-in compliance boundaries and human-in-the-loop controls for secure autonomous shopping.</p>
             </div>
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>📊</div>
-              <h3>Risk Analysis</h3>
-              <p>Real-time fraud detection and risk scoring with transparent AI reasoning.</p>
-            </div>
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>💎</div>
-              <h3>Enterprise Ready</h3>
-              <p>B2B-focused infrastructure with compliance, security, and reliability first.</p>
+              <h3>Full Transparency</h3>
+              <p>Complete audit trails and decision reasoning for trust and regulatory compliance.</p>
             </div>
           </div>
         </section>
 
         <section className={styles.cta}>
-          <h2>Ready to protect every transaction?</h2>
-          <p>Join thousands of businesses using PayFlow for reliable payment processing.</p>
+          <h2>Ready to enable autonomous shopping?</h2>
+          <p>Join the future of AI-powered commerce with Orchaim's MCP server.</p>
           <Link href="/dashboard">
-            <button className={styles.ctaButtonLarge}>Start Processing Payments</button>
+            <button className={styles.ctaButtonLarge}>Get Started Today</button>
           </Link>
         </section>
       </main>
 
       <footer className={styles.footer}>
-        <p>© 2024 PayFlow. Built for the future of payments.</p>
+        <p>© 2024 Orchaim. Powering the future of agentic commerce.</p>
       </footer>
     </div>
   );

@@ -1,8 +1,8 @@
 
 .container {
-  background: #0f1419;
+  background: #f9fafb;
   min-height: 100vh;
-  color: white;
+  color: #1f2937;
 }
 
 .nav {
@@ -10,15 +10,22 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid #374151;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: bold;
-  color: #10b981;
+  color: #1f2937;
   text-decoration: none;
+}
+
+.logoIcon {
+  color: #f59e0b;
 }
 
 .navLinks {
@@ -27,8 +34,19 @@
 }
 
 .navLinks span {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navLinks span:hover {
+  color: #1f2937;
+}
+
+.navLinks span:first-child {
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .main {
@@ -43,16 +61,16 @@
 }
 
 .card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid #374151;
+  background: white;
+  border: 1px solid #e5e7eb;
   border-radius: 1rem;
   padding: 2rem;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .card h2 {
   margin-bottom: 1.5rem;
-  color: white;
+  color: #1f2937;
   font-size: 1.25rem;
   font-weight: 600;
 }
@@ -75,22 +93,25 @@
 }
 
 .inputGroup label {
-  color: rgba(255, 255, 255, 0.7);
+  color: #374151;
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .input, .select {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #374151;
+  background: white;
+  border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   padding: 0.75rem;
-  color: white;
+  color: #1f2937;
   font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
 .input:focus, .select:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
 .buttonGroup {
@@ -100,7 +121,7 @@
 }
 
 .submitButton {
-  background: #10b981;
+  background: #1f2937;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -111,7 +132,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: #059669;
+  background: #374151;
 }
 
 .submitButton:disabled {
@@ -119,10 +140,10 @@
   cursor: not-allowed;
 }
 
-.highRiskButton {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid #ef4444;
+.agentButton {
+  background: transparent;
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -130,9 +151,14 @@
   transition: all 0.3s ease;
 }
 
+.agentButton:hover {
+  background: #f59e0b;
+  color: white;
+}
+
 .terminal {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #374151;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   padding: 1rem;
   font-family: 'Courier New', monospace;
@@ -140,16 +166,16 @@
 }
 
 .terminalHeader {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-bottom: 0.5rem;
 }
 
 .terminalText {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
 }
 
 .success {
-  color: #10b981;
+  color: #059669;
   margin-top: 0.5rem;
 }
 
@@ -160,8 +186,8 @@
 }
 
 .processor {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #374151;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   padding: 1rem;
 }
@@ -175,16 +201,16 @@
 
 .processorName {
   font-weight: 600;
-  color: white;
+  color: #1f2937;
 }
 
 .statusActive {
-  color: #10b981;
+  color: #059669;
   font-size: 0.875rem;
 }
 
 .processorStats {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
@@ -195,14 +221,19 @@
 }
 
 .freezeButton, .unfreezeButton {
-  background: rgba(107, 114, 128, 0.3);
-  color: #9ca3af;
-  border: 1px solid #6b7280;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.3s ease;
+}
+
+.freezeButton:hover, .unfreezeButton:hover {
+  background: #f3f4f6;
+  color: #1f2937;
 }
 
 .tagGroup {
@@ -212,8 +243,8 @@
 }
 
 .tag {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
+  background: #dbeafe;
+  color: #1d4ed8;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   font-size: 0.75rem;
@@ -235,25 +266,25 @@
 }
 
 .riskMinimal {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  border: 1px solid #10b981;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #16a34a;
 }
 
 .riskMedium {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  background: #fef3c7;
+  color: #92400e;
   border: 1px solid #f59e0b;
 }
 
 .riskHigh {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: #fee2e2;
+  color: #991b1b;
   border: 1px solid #ef4444;
 }
 
 .generateButton {
-  background: #10b981;
+  background: #1f2937;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -262,6 +293,11 @@
   font-weight: 500;
   width: 100%;
   margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.generateButton:hover {
+  background: #374151;
 }
 
 .riskMetrics {
@@ -275,7 +311,7 @@
 }
 
 .riskLabel {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
@@ -283,12 +319,12 @@
 .riskValue {
   font-size: 2rem;
   font-weight: bold;
-  color: #f59e0b;
+  color: #059669;
 }
 
 .riskChart {
   height: 100px;
-  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #059669 100%);
   border-radius: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -300,21 +336,23 @@
 .analysisHeader {
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #1f2937;
 }
 
 .analysisReason {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-top: 0.5rem;
 }
 
 .reasoningBar {
-  background: rgba(107, 114, 128, 0.3);
+  background: white;
   padding: 1rem 2rem;
   border-radius: 0.5rem;
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid #374151;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
