@@ -231,7 +231,3 @@ curl -X POST http://localhost:8000/demo/simulate_high_risk
 3. Add database for audit logs
 4. Implement webhook handlers
 5. Add monitoring and alerts
-
-## 📜 License
-
-MIT
